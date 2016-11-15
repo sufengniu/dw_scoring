@@ -16,17 +16,6 @@ from sklearn.preprocessing import MultiLabelBinarizer
 
 from collections import defaultdict
 
-class TopKRanker(OneVsRestClassifier):
-    def predict(self, X, top_k_list):
-        assert X.shape[0] == len(top_k_list)
-        probs = numpy.asarray(super(TopKRanker, self).predict_proba(X))
-        all_labels = []
-        for i, k in enumerate(top_k_list):
-            probs_ = probs[i, :]
-            labels = self.classes_[probs_.argsort()[-k:]].tolist()
-            all_labels.append(labels)
-        return all_labels
-
 def sparse2graph(x):
     G = defaultdict(lambda: set())
     cx = x.tocoo()
@@ -75,7 +64,7 @@ for x in range(number_shuffles):
 # 3. to score each train/test group
 all_results = defaultdict(list)
 
-training_percents = [0.1, 0.5, 0.9]
+training_percents = [0.3, 0.5, 0.9]
 # uncomment for all training percents
 #training_percents = numpy.asarray(range(1,10))*.1
 for train_percent in training_percents:
@@ -94,8 +83,9 @@ for train_percent in training_percents:
     for i, j in izip(cy.row, cy.col):
         y_train[i].append(j)
 
-    mlb = MultiLabelBinarizer()
-    y_train_onehot = mlb.fit_transform(y_train)
+    #mlb = MultiLabelBinarizer()
+    #y_train_onehot = mlb.fit_transform(y_train)
+    y_train_onehot = label2onehot(y_train, 39)
 
     #assert sum(len(l) for l in y_train) == y_train_.nnz
 
@@ -108,9 +98,10 @@ for train_percent in training_percents:
     for i, j in izip(cy.row, cy.col):
         y_test[i].append(j)
 
-    y_test_onehot = mlb.fit_transform(y_test)
+    #y_test_onehot = mlb.fit_transform(y_test)
+    y_test_onehot = label2onehot(y_test, 39)
 
-    clf = OneVsRestClassifier(LogisticRegression())
+    clf = OneVsRestClassifier(LogisticRegression(max_iter=500))
     clf.fit(X_train, y_train_onehot)
 
     preds = clf.predict(X_test)

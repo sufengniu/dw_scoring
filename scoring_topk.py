@@ -108,7 +108,7 @@ for train_percent in training_percents:
 
     y_test_onehot = label2onehot(y_test, 39)
 
-    clf = TopKRanker(LogisticRegression())
+    clf = TopKRanker(LogisticRegression(max_iter=500,))
 
     clf.fit(X_train, y_train_onehot)
 
