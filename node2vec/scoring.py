@@ -32,7 +32,7 @@ def usage():
 
 s0 = False
 top_k = False
-emb_file = "blogcatalog.emb"
+emb_file = "graph/blogcatalog.emb"
 mat_file = "blogcatalog.mat"
 emb = None
 

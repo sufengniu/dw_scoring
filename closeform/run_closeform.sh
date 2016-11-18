@@ -6,11 +6,13 @@ iter=30
 alpha=0.85
 L=7
 
+touch $data.emb
+
 echo "==========================================================================================="
 echo "configuration: representation dimension: $size, alpha: $alpha, length: $L, SVD iterations: $iter, using matrix inversion"
-python cf.py --size $size --alpha $alpha --L $L --iter $iter --inv
+python cf.py -s $size -a $alpha -l $L -t $iter -i
 echo "==========================================================================================="
 echo "configuration: representation dimension: $size, alpha: $alpha, length: $L, SVD iterations: $iter, without using matrix inversion"
-python cf.py --size $size --alpha $alpha --L $L --iter $iter
+python cf.py -s$size -a $alpha -l $L -t $iter
 
 

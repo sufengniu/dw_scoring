@@ -40,12 +40,12 @@ L = 40
 size = 64
 iters = 30
 
-try:
-    opts, args = getopt.getopt(sys.argv[1:], "hm:in:g:a:l:s:t", ["file="])
-except getopt.GetoptError, err:
-    print 'invalid command line'
-    usage()
-    sys.exit(2)
+#try:
+opts, args = getopt.getopt(sys.argv[1:], "s:m:ig:n:a:l:t:h", ["file="])
+#except getopt.GetoptError, err:
+#    print 'invalid command line'
+#    usage()
+#    sys.exit(2)
 for opt, arg in opts:
     if opt in ("-m", "--mat"):
         mat_file = arg
@@ -62,7 +62,7 @@ for opt, arg in opts:
     if opt in ("-s", "--size"):
         size = int(arg)
     if opt in ("-t", "--iter"):
-        iterst = int(arg)
+        iters = int(arg)
     elif opt in ("-h", "--help"):
         usage()
 
@@ -96,13 +96,14 @@ else:
 U, Sigma, VT = randomized_svd(Y, n_components=size, n_iter= iters, random_state=None)
 Uw = U.dot( np.diag( np.sqrt(Sigma)) )
 
+
 print "===================================================="
 print "result without top-k"
 score(Uw, startfrom0=True, topk=True)
 print "result with top-k"
 score(Uw, startfrom0=True, topk=False)
 print "===================================================="
-print "\n\n"
+print "\n"
 
 
 

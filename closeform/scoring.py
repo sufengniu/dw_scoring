@@ -16,43 +16,11 @@ from sklearn.preprocessing import MultiLabelBinarizer
 
 from collections import defaultdict
 
-import sys
-import getopt
-import os, struct
-
-
-def usage():
-    print '''
-        -f, --emb: input embedding file
-        -m, --mat: input mat file
-        -s, --startzero: index start from 0 or 1
-        -t, --topk: top-k method or not
-        -h, --help: help function
-        '''
-
 s0 = False
 top_k = False
 emb_file = "blogcatalog.emb"
 mat_file = "blogcatalog.mat"
 emb = None
-
-try:
-    opts, args = getopt.getopt(sys.argv[1:], "hf:sm:t", ["file="])
-except getopt.GetoptError, err:
-    print 'invalid command line'
-    usage()
-    sys.exit(2)
-for opt, arg in opts:
-    if opt in ("-f", "--emb"):
-        emb_file = arg
-    if opt in ("-m", "--mat"):
-        mat_file = arg
-    if opt in ("-s", "--startzero"):
-        s0 = True
-    if opt in ("-t", "--topk"):
-        top_k = True
-    elif opt in ("-h", "--help"):
-        usage()
 
 
 class TopKRanker(OneVsRestClassifier):
@@ -88,9 +56,6 @@ def score(emb, startfrom0=False, topk=False):
     matfile = mat_file
     embeddings_file = emb_file
 
-    # 1. Load Embeddings
-    embed = numpy.loadtxt(embeddings_file, skiprows=1)
-
     # 2. Load labels
     mat = loadmat(matfile)
     A = mat['network']
@@ -107,6 +72,8 @@ def score(emb, startfrom0=False, topk=False):
         index_align = 1
 
     if emb is None:
+        # 1. Load Embeddings
+        embed = numpy.loadtxt(embeddings_file, skiprows=1)
         features_matrix = numpy.asarray([embed[numpy.where(embed[:,0]==node+index_align), 1:][0,0] for node in range(len(graph))])
         features_matrix = numpy.reshape(features_matrix, [features_matrix.shape[0], features_matrix.shape[-1]])
     else:
@@ -188,4 +155,4 @@ def score(emb, startfrom0=False, topk=False):
             print  x
         print '-------------------'
 
-score(emb, startfrom0=s0, topk=top_k)
+#score(emb, startfrom0=s0, topk=top_k)

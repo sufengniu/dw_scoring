@@ -20,11 +20,11 @@ do
         echo "configuration: dimension: $size, window length: $len, number walks: $nw, walk length: $wl, p: $p_var, q: $q_var"
 		python src/main.py --input graph/$data.edgelist --output emb/$data.emb --p $p_var --q $q_var --dimension $size --window-size $len --num-walks $nw --walk-length $wl
 	    echo "without top-k results"
-        python scoring.py # without top-k
+        python scoring.py --emb graph/$data.emb # without top-k
         echo "with top-k results"
-        python scoring.py -t # with top-k
+        python scoring.py -t --emb graph/$data.emb # with top-k
         echo "==========================================================================================="
-
+        echo ""
     done
 done
 
