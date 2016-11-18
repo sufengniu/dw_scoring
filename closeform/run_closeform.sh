@@ -11,6 +11,6 @@ echo "configuration: representation dimension: $size, alpha: $alpha, length: $L,
 python cf.py -s $size -a $alpha -l $L -t $iter -i -m $data.mat
 echo "==========================================================================================="
 echo "configuration: representation dimension: $size, alpha: $alpha, length: $L, SVD iterations: $iter, without using matrix inversion"
-python cf.py -s $size -a $alpha -l $L -t $iter -f -m $data.mat
+python cf.py -s $size -a $alpha -l $L -t $iter -m $data.mat
 
 
