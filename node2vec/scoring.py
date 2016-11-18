@@ -21,18 +21,24 @@ import getopt
 import os, struct
 
 
+s0 = False
+top_k = False
+emb_file = "blogcatalog.emb"
+mat_file = "blogcatalog.mat"
+emb = None
+
 def usage():
     print '''
-        -f, --emb: input embedding file
-        -m, --mat: input mat file
-        -s, --startzero: index start from 0 or 1
-        -t, --topk: top-k method or not
-        -h, --help: help function
+        -f: input embedding file
+        -m: input mat file
+        -s: index start from 0 or 1
+        -t: top-k method or not
+        -h: help function
         '''
 
 s0 = False
 top_k = False
-emb_file = "graph/blogcatalog.emb"
+emb_file = "blogcatalog.emb"
 mat_file = "blogcatalog.mat"
 emb = None
 
@@ -43,16 +49,17 @@ except getopt.GetoptError, err:
     usage()
     sys.exit(2)
 for opt, arg in opts:
-    if opt in ("-f", "--emb"):
+    if opt in ("-f"):
         emb_file = arg
-    if opt in ("-m", "--mat"):
+    if opt in ("-m"):
         mat_file = arg
-    if opt in ("-s", "--startzero"):
+    if opt in ("-s"):
         s0 = True
-    if opt in ("-t", "--topk"):
+    if opt in ("-t"):
         top_k = True
-    elif opt in ("-h", "--help"):
+    elif opt in ("-h"):
         usage()
+
 
 
 class TopKRanker(OneVsRestClassifier):
