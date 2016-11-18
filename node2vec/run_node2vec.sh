@@ -1,4 +1,4 @@
-#!/bin/bash
+#/bin/bash
 
 data=blogcatalog
 size=64
@@ -6,6 +6,9 @@ len=5
 nw=10
 wl=40
 
+if [ ! -d emb ]; then
+    mkdir emb
+fi
 #source graph/convert.sh graph/$data.csv graph/$data.edgelist
 
 
@@ -21,7 +24,7 @@ do
         echo "with top-k results"
         python scoring.py -t # with top-k
         echo "==========================================================================================="
-        echo "\n"
+
     done
 done
 

@@ -25,6 +25,8 @@ def usage():
         -g, --group: mat file group name
         -a, --alpha: alpha value
         -l, --L: L value, relation with alpha
+        -s, --size: representation size
+        -t, --iter: number of iterations for SVD
         -h, --help: help function
         '''
 
@@ -35,9 +37,11 @@ g_name = 'group'
 
 alpha = 0.85
 L = 40
+size = 64
+iters = 30
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hm:in:g:a:l:", ["file="])
+    opts, args = getopt.getopt(sys.argv[1:], "hm:in:g:a:l:s:t", ["file="])
 except getopt.GetoptError, err:
     print 'invalid command line'
     usage()
@@ -55,6 +59,10 @@ for opt, arg in opts:
         alpha = float(arg)
     if opt in ("-l", "--L"):
         L = int(arg)
+    if opt in ("-s", "--size"):
+        size = int(arg)
+    if opt in ("-t", "--iter"):
+        iterst = int(arg)
     elif opt in ("-h", "--help"):
         usage()
 
@@ -85,7 +93,7 @@ else:
     Y = np.log(Pi)
 
 
-U, Sigma, VT = randomized_svd(Y, n_components=64, n_iter= 30, random_state=None)
+U, Sigma, VT = randomized_svd(Y, n_components=size, n_iter= iters, random_state=None)
 Uw = U.dot( np.diag( np.sqrt(Sigma)) )
 
 print "===================================================="
