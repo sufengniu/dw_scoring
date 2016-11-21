@@ -1,18 +1,17 @@
 #!/bin/bash
 
-data=kaggle_2365
+data=kaggle_3059
 matfile=../graph/$data.mat
 outfile=../emb/${data}_cf
-size=64
+size=12
 iter=30
 alpha=0.85
 L=7
 
-for nw in 10 20 50 100
-do
-    python cf.py -s $size -a $alpha -l $L -t $iter -i -m $matfile -o ../emb/${data}_cf_${nw}.emb
-    python cf.py -s $size -a $alpha -l $L -t $iter -m $matfile -o ../emb/${data}_cf_i_${nw}.emb
-done
+
+python cf.py -s $size -a $alpha -l $L -t $iter -i -m $matfile -o ../emb/kaggle/${data}_cfi.emb
+python cf.py -s $size -a $alpha -l $L -t $iter -m $matfile -o ../emb/kaggle/${data}_cf.emb
+
 
 
 

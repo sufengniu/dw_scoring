@@ -116,7 +116,7 @@ if not method_inv:
     for step in range(0, L):
         tmp = P.dot(tmp)
         Pi = Pi + tmp;
-    Y = np.log(Pi.toarray())
+    Y = np.log(Pi.toarray()+10**(-30))
 
 else:
     # -- method 2

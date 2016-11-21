@@ -28,7 +28,7 @@ import fnmatch
 s0 = False
 all_file = True
 top_k = False
-emb_file = "../emb/blogcatalog.emb"
+emb_file = "../emb/blogcatalog/blogcatalog_cfi.emb"
 mat_file = "../graph/blogcatalog.mat"
 emb = None
 startfrom0=True
@@ -130,7 +130,7 @@ def score(emb, startfrom0=False, topk=False):
         features_matrix_array.append(dw_features_matrix_array)
         features_matrix_array.append(cf_features_matrix_array)
         features_matrix_array.append(cfi_features_matrix_array)
-        
+
     else:
         if emb is None:
             # 1. Load Embeddings
@@ -142,7 +142,7 @@ def score(emb, startfrom0=False, topk=False):
         features_matrix_array.append(features_matrix)
 
     res = []
-    
+
     training_percents = [0.3, 0.5, 0.9]
     # uncomment for all training percents
     #training_percents = numpy.asarray(range(1,10))*.1
@@ -165,7 +165,7 @@ def score(emb, startfrom0=False, topk=False):
                     X, y = shuf
 
                     training_size = int(train_percent * X.shape[0])
-        
+
                     X_train = X[:training_size, :]
                     y_train_ = y[:training_size]
 
@@ -199,7 +199,7 @@ def score(emb, startfrom0=False, topk=False):
                         clf = OneVsRestClassifier(LogisticRegression(max_iter=500))
 
                     clf.fit(X_train, y_train_onehot)
-        
+
                     if topk:
                         # find out how many labels should be predicted
                         top_k_list = [len(l) for l in y_test]
@@ -207,14 +207,14 @@ def score(emb, startfrom0=False, topk=False):
                         preds = label2onehot(preds, labels_matrix.toarray().shape[1])
                     else:
                         preds = clf.predict(X_test)
-        
+
                     results = {}
                     averages = ["micro", "macro", "samples", "weighted"]
                     for average in averages:
                         results[average] = f1_score(y_test_onehot,  preds, average=average)
-        
+
                     all_results[train_percent].append(results)
-                
+
 
             print 'Results, using embeddings of dimensionality', X.shape[1]
             print '-------------------'
@@ -246,7 +246,7 @@ def score(emb, startfrom0=False, topk=False):
             plt.title('percentage: %f, metric: %s' %(p, average) )
             plt.savefig("p%.1f_%s.png" % (p,average))
             #plt.show()
-            
+
 
 
 
