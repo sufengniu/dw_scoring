@@ -185,9 +185,9 @@ def score(emb, startfrom0=False, topk=False, k=2, classifier=classifier):
         m_buf.append(m_tmp)
 
     if isinstance(os.path.basename(os.path.splitext(embeddings_file)[0]).split('_')[-1], int):
-        filename = '../data/results_%d.mat' % int(os.path.basename(os.path.splitext(embeddings_file)[0]).split('_')[-1])
+        filename = '../result/results_%d.mat' % int(os.path.basename(os.path.splitext(embeddings_file)[0]).split('_')[-1])
     else:
-        filename = '../data/results.mat'
+        filename = '../result/results.mat'
     scipy.io.savemat(filename, mdict={'results': m_buf})
 
     print 'Averaged crossvalidation results, using embeddings of dimensionality', X.shape[1]
