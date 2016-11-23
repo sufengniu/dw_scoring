@@ -21,7 +21,7 @@ for nw in 10 20 50 100
 do
     echo "-------- number walks = $nw ----------"
     deepwalk --format $format --input $input_file --output ../data/${data}_${nw}.emb --representation-size $size --number-walks $nw --walk-length $length --matfile-variable-name $var_name 
-    python scoring.py -m $input_file -f ../data/$data_${nw}.emb -s -k 10 
+    python scoring.py -m $input_file -f ../data/${data}_${nw}.emb -s -k 10 
 done
 
 
