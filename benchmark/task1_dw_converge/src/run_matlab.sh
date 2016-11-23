@@ -1,15 +1,16 @@
 #!/bin/bash
 
 # configuration
-data=blogcatalog
-input_file=../data/$data.emb
-matf_file=../data/$data.mat
+emb_file=blogcatalog_10.emb
+mat_file=blogcatalog.mat
+input_file=../data/$emb_file
+m_file=../data/$mat_file
 
 if [ ! -d ../results ]; then
     mkdir ../results
 fi
 
-python scoring.py -m $input_file -f ../data/$data.emb -s -k 10 
+python scoring.py -m $m_file -f $input_file -s -k 10 
 
 
 

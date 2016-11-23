@@ -66,7 +66,7 @@ for opt, arg in opts:
     if opt in ("-k"):
         k = int(k)
     if opt in ("-c"):
-        classifier = arg    
+        classifier = arg
     elif opt in ("-h"):
         usage()
         sys.exit()
@@ -178,8 +178,8 @@ def score(emb, startfrom0=False, topk=False, k=2, classifier=classifier):
         m_tmp = []
         m_tmp.append(train_percent)
         for average in averages:
-            res_tmp[average] = np.average([all_results[train_percent][j][average] for j in range(k)])
-            m_tmp.append(np.average([all_results[train_percent][j][average] for j in range(k)]))
+            res_tmp[average] = numpy.average([all_results[train_percent][j][average] for j in range(k)])
+            m_tmp.append(numpy.average([all_results[train_percent][j][average] for j in range(k)]))
         mean_results[train_percent].append(res_tmp)
         m_buf.append(m_tmp)
 
