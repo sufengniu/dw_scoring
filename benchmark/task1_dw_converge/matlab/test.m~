@@ -1,0 +1,53 @@
+
+filename = 'kaggle/3059'; % 'Flickr'  'blogcatalog';
+load(['../data/' filename '.mat'])
+
+A = network;
+
+Walk = {'finite', 'infinite'}
+Wrap = {'exp', 'tan'};
+Emb = {'svd', 'cross_entropy'}
+option.dimension = 64;
+option.step_number = 7;
+option.flyout = 0.85;
+        
+        option.mode = 'infinite';
+        Pi = runRW(A, option);
+        
+        option.wrap = 'exp';
+        option.emb = 'svd';   %   svd      cross_entropy
+        [Uw Vw Y]= obtainEmb(Pi, option);
+        
+        
+        embedding = [Uw Vw]; % exp(Vw)];
+        M = size(embedding, 1);
+        output1 = size(embedding);
+        output2(:,1) = (0:M-1)';
+        output2(:,2:size(embedding,2)+1) = embedding;
+        outputname = '3059_exp_svd_U_V.emb';
+        dlmwrite( outputname, output1, 'delimiter',' ');
+        dlmwrite( outputname, output2,'-append', 'delimiter',' ');
+        
+for i_walk = 1:length(Walk)
+for i_model = 1:length(Model)
+    
+        option.mode = 'infinite';
+        option.wrap = Model{i_model};
+        option.emb = Model{i_model};
+        Pi = runRW(A, option);
+        [Uw Vw Y ]= obtainEmb(Pi, option)
+
+        embedding = [Uw exp(Vw)];
+        M = size(embedding, 1);
+        output1 = size(embedding);
+        output2(:,1) = (0:M-1)';
+        output2(:,2:size(embedding,2)+1) = embedding;
+   %     outputname = [filename '_'  option.mode '_'   option.model    '.emb'];
+        
+        outputname = 'square_n001.emb';
+        dlmwrite( outputname, output1, 'delimiter',' ');
+        dlmwrite( outputname, output2,'-append', 'delimiter',' ');
+        
+end
+end
+
