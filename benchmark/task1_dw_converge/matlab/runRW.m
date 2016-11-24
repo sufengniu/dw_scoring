@@ -1,4 +1,4 @@
-function   [Y Pi Uw] = runRW(A, option)
+function   Pi = runRW(A, option)
 
 % option.step_number
 % option.flyout
@@ -130,9 +130,3 @@ switch option.mode
                 Phi = sparse( 1:N^2, repmat( 1:N, [N 1]), 1);
                 Pi = Pi_ex*Phi;
 end
-
-
-    disp('stage 3: svd')
-    Y = log( Pi + eps^2 );
-    [U S V] = svds(Y, option.dimension);
-    Uw = U*diag( sqrt(diag(S)) );
