@@ -7,7 +7,15 @@ switch option.wrap
         Y = Pi;
         
     case 'poly'
-        Y = Pi.^(0.01);  
+        
+                power = option.poly_power;
+                if power > 0
+                    Y =  1/power.*( Pi.^power );  
+                elseif power == 0
+                    Y = log( Pi + eps^2 );
+                else
+                    Y = 1/power.*(Pi +eps^4).^power;  
+                end
         
     case 'exp'
         Y = log( Pi + eps^2 );
