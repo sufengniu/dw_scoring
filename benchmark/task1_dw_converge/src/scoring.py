@@ -99,7 +99,7 @@ def score(emb, startfrom0=False, topk=False, k=2, classifier=classifier):
     if emb is None:
         # 1. Load Embeddings
         embed = numpy.loadtxt(embeddings_file, skiprows=1)
-        features_matrix = numpy.asarray([embed[numpy.where(embed[:,0]==node+index_align), 1:][0,0] for node in range(len(graph))])
+        features_matrix = numpy.asarray([embed[numpy.where(embed[:,0]==node+index_align), 1:][0,0] for node in range(A.shape[0])])
         features_matrix = numpy.reshape(features_matrix, [features_matrix.shape[0], features_matrix.shape[-1]])
     else:
         features_matrix = emb

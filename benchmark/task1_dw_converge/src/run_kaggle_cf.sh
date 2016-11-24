@@ -3,12 +3,9 @@
 # configuration
 format=mat
 input_path=../data/kaggle
-emb_path=../result/embedding/kaggle
-res_path=../result/kaggle_cf
+emb_path=../result/embedding/kaggle/dw_cf
+res_path=../result/mat/kaggle/dw_cf
 length=7   # randome walk length
-size=10    # embedding size
-number_walk=10 # number of walks
-window_size=5    # skip gram window size 
 var_name=network    # mat file variable name
 parallel=8    # number of parallel processor
 
