@@ -3,7 +3,7 @@
 addpath('/Users/sihengc/Documents/Research/Project/Graph_Signal_Processing/Toolbox/Social_Science/embedding/dw_scoring/benchmark/task1_dw_converge/data/kaggle/')
 files = dir('/Users/sihengc/Documents/Research/Project/Graph_Signal_Processing/Toolbox/Social_Science/embedding/dw_scoring/benchmark/task1_dw_converge/data/kaggle/*.mat');
 
-Walk = {'finite', 'infinite'}
+Walk = {'memory_finite', 'memory_infinite'}
 Poly_power =  [1  0.1  0.01  0  -0.01  -0.1  -1];
 
 % Wrap = {'exp', 'tan'};
@@ -13,10 +13,12 @@ option.step_number = 7;
 option.flyout = 0.85;
 option.wrap = 'poly';
 option.emb = 'svd';   %   svd  cross_entropy
-
+option.p = 0.5;
+option.q = 0.5;
 
 for i_file = 1:length(files)
-    
+i_file
+tic;
     load(files(i_file).name)
  %  load('/Users/sihengc/Documents/Research/Project/Graph_Signal_Processing/Toolbox/Social_Science/embedding/dw_scoring/benchmark/task1_dw_converge/data/blogcatalog.mat')
 
@@ -49,6 +51,6 @@ for i_file = 1:length(files)
             end
             
     end
-
+toc;
 end
 
