@@ -17,8 +17,9 @@ option.emb = 'svd';   %   svd  cross_entropy
 
 for i_file = 1:length(files)
     
-    load(files(1).name)
-   
+    load(files(i_file).name)
+ %  load('/Users/sihengc/Documents/Research/Project/Graph_Signal_Processing/Toolbox/Social_Science/embedding/dw_scoring/benchmark/task1_dw_converge/data/blogcatalog.mat')
+
     A = network;
     filename = strsplit( files(i_file).name, '.');
     
@@ -40,9 +41,11 @@ for i_file = 1:length(files)
                     output2(:,1) = (0:M-1)';
                     output2(:,2:size(embedding,2)+1) = embedding;
                     outputname = [filename{1}  '_' option.mode  '_'   option.wrap  '_'  num2str(i_power)  '.emb'];
+
                     dlmwrite( outputname, output1, 'delimiter',' ');
                     dlmwrite( outputname, output2,'-append', 'delimiter',' ');
                     
+                    clear output1 output2 outputname embedding M
             end
             
     end
