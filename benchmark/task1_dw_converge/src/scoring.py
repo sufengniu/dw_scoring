@@ -34,7 +34,7 @@ emb_file = "../data/blogcatalog.emb"
 mat_file = "../data/blogcatalog.mat"
 out_file = "../result/blogcatalog"
 emb = None
-startfrom0=True
+startfrom0=False
 topk=False
 classifier='log'
 k=10
@@ -99,7 +99,7 @@ def score(emb, startfrom0=False, topk=False, k=2, classifier=classifier):
     if emb is None:
         # 1. Load Embeddings
         embed = numpy.loadtxt(embeddings_file, skiprows=1)
-        features_matrix = numpy.asarray([embed[numpy.where(embed[:,0]==node+index_align), 1:][0,0] for node in range(len(graph))])
+        features_matrix = numpy.asarray([embed[numpy.where(embed[:,0]==node+index_align), 1:][0,0] for node in range(A.shape[0])])
         features_matrix = numpy.reshape(features_matrix, [features_matrix.shape[0], features_matrix.shape[-1]])
     else:
         features_matrix = emb
@@ -175,7 +175,10 @@ def score(emb, startfrom0=False, topk=False, k=2, classifier=classifier):
             results = {}
             averages = ["micro", "macro", "samples", "weighted"]
             for average in averages:
-                results[average] = f1_score(y_test_onehot,  preds, average=average)
+                if (labels_matrix.shape[1] == 1 and average == "samples"):
+                    results[average] = 1.0
+                else:
+                    results[average] = f1_score(y_test_onehot,  preds, average=average)
 
             all_results[train_percent].append(results)
             all_results_m.append(results)
