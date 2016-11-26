@@ -67,7 +67,7 @@ for opt, arg in opts:
     if opt in ("-t"):
         top_k = True
     if opt in ("-k"):
-        k = int(k)
+        k = int(arg)
     if opt in ("-c"):
         classifier = arg
     if opt in ("-o"):
@@ -106,6 +106,7 @@ def score(emb, startfrom0=False, topk=False, k=2, classifier=classifier):
 
     shuffles = []
     number_shuffles = k
+    print k, "-----------------"
     for x in range(number_shuffles):
       shuffles.append(skshuffle(features_matrix, labels_matrix))
 
