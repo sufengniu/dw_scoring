@@ -372,7 +372,7 @@ for i_group in range(group_num):
     label_tmp_4 = defaultdict(list)
     for train_percent in training_percents:
         for shuf in shuffles4:
-            X_select, index = cover_fit(group[:, i_group], X, 1)
+            X_select, index = cover_fit(group[Train, i_group], X[Train,:], 1)
             preds_tmp_4[train_percent].append(X_select[Test,index])
     preds_4[i_group] = preds_tmp_4
     y_label_4[i_group] = label_tmp_4
