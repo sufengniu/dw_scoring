@@ -154,9 +154,10 @@ def cover_fit(group, X, K):
         coding[ind[1],i_group] = 0;
 
     coding_ind = coding.sum(axis=1)
-    z = find(coding_ind > 0)
-    X_select = X[:,z[1]]
-    return X_select
+    index = find(coding_ind > 0)
+    X_select = X[:,index[1]]
+    return X_select, index
+
 
 def logic_fit(group, X, K):
     n,M = group.shape
@@ -198,7 +199,7 @@ def attributeEmbedding(PG, X, group, option):
     # thr_ind = 5;
     mag_set = np.array([0, 0.1, 0.3, 0.5, 0.8, 0.95])
     if option['overlap']:
-        X_select = cover_fit(group, X, sparsity)
+        X_select, index = cover_fit(group, X, sparsity)
     else:
         X_select = logic_fit(group, X, sparsity)
 
@@ -364,6 +365,19 @@ for i_group in range(group_num):
             label_tmp_3[train_percent].append(y_test)
     preds_3[i_group] = preds_tmp_3
     y_label_3[i_group] = label_tmp_3
+
+
+# directly use attributes
+    preds_tmp_4 = defaultdict(list)
+    label_tmp_4 = defaultdict(list)
+    for train_percent in training_percents:
+        for shuf in shuffles4:
+            X_select, index = cover_fit(group[:, i_group], X, 1)
+            preds_tmp_4[train_percent].append(X_select[Test,index])
+    preds_4[i_group] = preds_tmp_4
+    y_label_4[i_group] = label_tmp_4
+
+
 
 averages = ["micro", "macro", "samples", "weighted"]
 results1 = {}
