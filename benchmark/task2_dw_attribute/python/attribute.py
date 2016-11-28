@@ -149,12 +149,15 @@ def cover_fit(group, X, K):
         for i_attribute in range(T):
             coding[i_attribute, i_group] = jaccard_sim(y, X[:,i_attribute].toarray())
         coding_sort = sorted(coding[:,i_group],reverse=True)
-        ind = find(coding[:,i_group] < coding_sort[K])
+        ind = find(coding[:,i_group] < coding_sort[min(K,T-1) ])
         coding[ind[1],i_group] = 0;
+    if coding.sum() > 0:
+       coding_ind = coding.sum(axis=1)
+       index = find(coding_ind > 0)[1]
+    else:
+       index = 0
 
-    coding_ind = coding.sum(axis=1)
-    index = find(coding_ind > 0)
-    X_select = X[:,index[1]]
+    X_select = X[:,index]
     return X_select, index
 	
 def logic_fit(group, X, K):
@@ -201,39 +204,44 @@ def attributeEmbedding(PG, X, group, option):
     else:
         X_select = logic_fit(group, X, sparsity)
 
-    template = buildTemplate(group)
-    P_Ai = buildAttributeGraph(X_select,PG)
+    if X_select.shape[1] != 0:
 
-    n, T = X_select.shape
-    mu = np.zeros([T,1])
-    for i_attribute in range(T):
-        mu[i_attribute] = np.multiply( template, P_Ai[:,:,i_attribute] - PG).sum()
-    mu_sort = sorted(mu,reverse=True)
+        template = buildTemplate(group)
+        P_Ai = buildAttributeGraph(X_select,PG)
+        n, T = X_select.shape
+        mu = np.zeros([T,1])
+        for i_attribute in range(T):
+            mu[i_attribute] = np.multiply( template, P_Ai[:,:,i_attribute] - PG).sum()
+        mu_sort = sorted(mu,reverse=True)
 
 
-    # ind = find(mu < max(mu_sort[thr_ind], 0))
-    ind = find(mu < 0)
-    mu[ind[0],ind[1]] = 0
-    if mu.sum() > 0:
-        mu = np.multiply( mu, 1.0/(1e-64 + mu.sum()))
-        obj_value = np.zeros([ mag_set.shape[0],1])
-        for i_mag in range(mag_set.shape[0]):
-            Y = mergeTransition( np.multiply(mag_set[i_mag],mu), PG, P_Ai, alpha)
-            obj_value[i_mag,0] = np.multiply( template, Y ).sum()
+        # ind = find(mu < max(mu_sort[thr_ind], 0))
+        ind = find(mu < 0)
+        mu[ind[0],ind[1]] = 0
+        if mu.sum() > 0:
+            mu = np.multiply( mu, 1.0/(1e-64 + mu.sum()))
+            obj_value = np.zeros([ mag_set.shape[0],1])
+            for i_mag in range(mag_set.shape[0]):
+                Y = mergeTransition( np.multiply(mag_set[i_mag],mu), PG, P_Ai, alpha)
+                obj_value[i_mag,0] = np.multiply( template, Y ).sum()
 
-        index = np.argmax(obj_value)
-        mu = np.multiply(mag_set[index],mu)
+            index = np.argmax(obj_value)
+            mu = np.multiply(mag_set[index],mu)
 
-    Y = mergeTransition( mu, PG, P_Ai, alpha)
-    U, Sigma, VT = randomized_svd(Y, n_components=dimension, n_iter= 30, random_state=None)
-    Uw = U.dot( np.diag( np.sqrt(Sigma)) )
+        Y = mergeTransition( mu, PG, P_Ai, alpha)
+        U, Sigma, VT = randomized_svd(Y, n_components=dimension, n_iter= 30, random_state=None)
+        Uw = U.dot( np.diag( np.sqrt(Sigma)) )
+
+    else:
+        Uw = deepwalk_infty_Embedding(PG, option)
+        mu = 0
     return Uw, mu
 
 
 def  deepwalk_infty_Embedding(PG, option):
     alpha = option['flyout']
     dimension = option['dimension']
-    Pinv = inv( (csr_matrix(eye(n)) - csr_matrix.multiply(P, alpha)).toarray() )  # Pinv = (I-\alpha*P)
+    Pinv = inv( (csr_matrix(eye(n)) - csr_matrix.multiply(PG, alpha)).toarray() )  # Pinv = (I-\alpha*P)
     Pi = np.divide(  Pinv - csr_matrix(eye(n)), alpha )  # (Pinv -I)/alpha
     ind = find( Pi < 1e-16 )
     Pi[ind[0],ind[1]] = 0
@@ -303,10 +311,6 @@ d = np.squeeze(np.asarray(A.sum(axis=1)))
 [rows, columns, value] = find(A)
 PG = csr_matrix((value/(1e-64 + d[rows]), (rows, columns)), shape=(n, n))
 
-n = A.shape[0]
-d = np.squeeze(np.asarray(A.sum(axis=1)))
-[rows, columns, value] = find(A)
-P = csr_matrix((value/(1e-64 + d[rows]), (rows, columns)), shape=(n, n))
 
 embedding4 = X.toarray()
 
@@ -377,7 +381,7 @@ for i_group in range(group_num):
             X_train, y_train, X_test, y_test = preprocessing(shuf, train_percent)
             y_train_t = np.reshape(y_train, (y_train.shape[0],1))
             X_select, index = cover_fit(csc_matrix(y_train_t), csc_matrix(X_train), 1)
-            preds_tmp_4[train_percent].append(X_test[:,index[1][0]])
+            preds_tmp_4[train_percent].append(X_test[:,index])
     preds_4[i_group] = preds_tmp_4
     y_label_4[i_group] = label_tmp_4
 
