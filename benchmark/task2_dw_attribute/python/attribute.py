@@ -134,12 +134,12 @@ def mergeTransition(mu, PG, P_Ai, alpha):
     Pinv = inv( eye(n) - np.multiply(P, alpha) )  # Pinv = (I-\alpha*P)
     Pi = np.multiply( Pinv - eye(n), 1.0/alpha )  # (Pinv -I)/alpha
     ind = find( Pi < 1e-16 )
-    Pi[ind[0],ind[1]] = 0;
+    Pi[ind[0],ind[1]] = 1e-16;
     Y = np.log(Pi)
     return Y
 
 def jaccard_sim(x,y):
-    obj_val = np.multiply(x,y).sum() / ( x.sum() + y.sum() - np.multiply(x,y).sum() )
+    obj_val = np.multiply(x,y).sum() / ( 1e-16 + x.sum() + y.sum() - np.multiply(x,y).sum() )
     return obj_val
 
 def max_fit(group, X ):
@@ -154,7 +154,7 @@ def max_fit(group, X ):
     
     index = np.where( coding == np.max(coding))
 
-    return index[0][0]    
+    return index[0][0]
 
 def cover_fit(group, X, K):
     n,M = group.shape
@@ -216,7 +216,7 @@ def attributeEmbedding(PG, X, group, option):
     sparsity = option['sparsity']
 
     # thr_ind = 5;
-    mag_set = np.array([0, 0.1, 0.3, 0.5, 0.8, 0.95])
+    mag_set = np.array([0, 0.1, 0.3, 0.5, 0.8, 0.99])
     if option['overlap']:
         X_select, index = cover_fit(group, X, sparsity)
     else:
@@ -262,7 +262,7 @@ def  deepwalk_infty_Embedding(PG, option):
     Pinv = inv( (csr_matrix(eye(n)) - csr_matrix.multiply(PG, alpha)).toarray() )  # Pinv = (I-\alpha*P)
     Pi = np.divide(  Pinv - csr_matrix(eye(n)), alpha )  # (Pinv -I)/alpha
     ind = find( Pi < 1e-16 )
-    Pi[ind[0],ind[1]] = 0
+    Pi[ind[0],ind[1]] = 1e-16
     Y = np.log(Pi)
     U, Sigma, VT = randomized_svd(Y, n_components=dimension, n_iter= 30, random_state=None)
     Uw = U.dot( np.diag( np.sqrt(Sigma)) )
@@ -277,7 +277,7 @@ def  deepwalk_fty_Embedding(PG, option):
         tmp = PG.dot(tmp)
         Pi = Pi + tmp;
     ind = find( Pi < 1e-16 )
-    Pi[ind[0],ind[1]] = 0
+    Pi[ind[0],ind[1]] = 1e-16
     Y = np.log(Pi.toarray())
     U, Sigma, VT = randomized_svd(Y, n_components=dimension, n_iter= 30, random_state=None)
     Uw = U.dot( np.diag( np.sqrt(Sigma)) )
@@ -304,8 +304,8 @@ option['overlap'] = 0
 option['step'] = 7
 
 
-k=5
-training_percents = [0.5, 0.9]
+k=10
+training_percents = [0.1, 0.3, 0.5, 0.9]
 preds_1 = {}
 preds_2 = {}
 preds_3 = {}
@@ -318,12 +318,12 @@ attr_index = 0
 
 # load data
 list_of_files = glob.glob('../dataset/kaggle/*.mat')
-#mat = scipy.io.loadmat('../dataset/1968.mat')
 for f in list_of_files:
     mat = scipy.io.loadmat(f)
+# mat = scipy.io.loadmat('../dataset/kaggle/8777.mat') # 11186  1968
     A = mat.get('network')
     group = mat.get('location')
-    X = mat.get('education')
+    X = mat.get('education')  # education   location_id
     ind = find(X>1)
     X[ind[0],ind[1]] = 1
     n, group_num = group.shape
@@ -332,12 +332,18 @@ for f in list_of_files:
     [rows, columns, value] = find(A)
     PG = csr_matrix((value/(1e-64 + d[rows]), (rows, columns)), shape=(n, n))
 
-    embedding3 = deepwalk_infty_Embedding(PG,option)
+    embedding1 = deepwalk_infty_Embedding(PG,option)
     embedding4 = X.toarray()
 
     for i_group in range(group_num):
         print "calculating group ", i_group
         label = group[:,i_group]
+        option['overlap'] = 0
+        option['sparsity']=20
+        embedding2, _= attributeEmbedding(PG, X, label, option)
+        option['overlap'] = 1
+        option['sparsity']=100
+        embedding3, _=attributeEmbedding(PG, X, label, option)
 
         # crossvalidation
         shuffles1 = []
@@ -346,20 +352,17 @@ for f in list_of_files:
         shuffles4 = []
         number_shuffles = k
         for x in range(number_shuffles):
-            shuf_tmp = skshuffle(embedding3, embedding4, label)
-            emb3 = shuf_tmp[0]
-            emb4 = shuf_tmp[1]
-            option['overlap'] = 0
-            option['sparsity']=20
-            embedding1, _ = attributeEmbedding(PG, X, shuf_tmp[2], option)
-            option['overlap'] = 1
-            option['sparsity']=100
-            embedding2, _=attributeEmbedding(PG, X, shuf_tmp[2], option)
+            shuf_tmp = skshuffle(embedding1, embedding2, embedding3, embedding4, label)
+            emb1 = shuf_tmp[0]
+            emb2 = shuf_tmp[1]
+            emb3 = shuf_tmp[2]
+            emb4 = shuf_tmp[3]
 
-            shuffles1.append([embedding1, shuf_tmp[2]])
-            shuffles2.append([embedding2, shuf_tmp[2]])
-            shuffles3.append([emb3, shuf_tmp[2]])
-            shuffles4.append([emb4, shuf_tmp[2]])
+
+            shuffles1.append([emb1, shuf_tmp[4]])
+            shuffles2.append([emb2, shuf_tmp[4]])
+            shuffles3.append([emb3, shuf_tmp[4]])
+            shuffles4.append([emb4, shuf_tmp[4]])
 
         preds_tmp_1 = defaultdict(list)
         label_tmp_1 = defaultdict(list)
@@ -478,6 +481,7 @@ for f in list_of_files:
     results_var = np.array([results1_var, results2_var, results3_var, results4_var])
     fname = os.path.basename(os.path.splitext(f)[0])
     filename = 'attr_%s_result.mat' % fname
+    # filename = 'attr_result.mat'
     scipy.io.savemat(filename, mdict={'average': results_avg, 'variance': results_var})
 
 
