@@ -4,6 +4,7 @@ from __future__ import division
 import scipy.io
 import math
 import numpy as np
+import scipy
 from scipy.sparse.linalg import norm
 from scipy.sparse.linalg import inv
 from scipy.sparse import csr_matrix, find
@@ -137,8 +138,6 @@ def jaccard_sim(x,y):
     obj_val = np.multiply(x,y).sum() / ( x.sum() + y.sum() - np.multiply(x,y).sum() )
     return obj_val
 
-
-
 def cover_fit(group, X, K):
     n,M = group.shape
     n,T = X.shape
@@ -157,8 +156,7 @@ def cover_fit(group, X, K):
     index = find(coding_ind > 0)
     X_select = X[:,index[1]]
     return X_select, index
-
-
+	
 def logic_fit(group, X, K):
     n,M = group.shape
     n,T = X.shape
@@ -175,12 +173,12 @@ def logic_fit(group, X, K):
                 ind = find(tmp > 1)
                 tmp[ind[0],ind[1]] = 1
                 Corr[i_attribute,0] = jaccard_sim(y, tmp)
-      
+
             index = np.argmax(Corr)
             tmp = x_aug + X[:,index]
             ind = find(tmp > 1)
             tmp[ind[0],ind[1]] = 1
-      
+
             if jaccard_sim(y, tmp) > jaccard_sim(y, x_aug):
                 x_aug = tmp
                 coding[index, i_group] = 1
@@ -209,7 +207,7 @@ def attributeEmbedding(PG, X, group, option):
     n, T = X_select.shape
     mu = np.zeros([T,1])
     for i_attribute in range(T):
-        mu[i_attribute] = np.multiply( template, P_Ai[:,:,i_attribute] - PG).sum()  
+        mu[i_attribute] = np.multiply( template, P_Ai[:,:,i_attribute] - PG).sum()
     mu_sort = sorted(mu,reverse=True)
 
 
@@ -230,7 +228,7 @@ def attributeEmbedding(PG, X, group, option):
     U, Sigma, VT = randomized_svd(Y, n_components=dimension, n_iter= 30, random_state=None)
     Uw = U.dot( np.diag( np.sqrt(Sigma)) )
     return Uw, mu
-   
+
 
 def  deepwalk_infty_Embedding(PG, option):
     alpha = option['flyout']
@@ -285,10 +283,12 @@ training_percents = [0.5, 0.9]
 preds_1 = {}
 preds_2 = {}
 preds_3 = {}
+preds_4 = {}
 y_label_1 = {}
 y_label_2 = {}
 y_label_3 = {}
-
+y_label_4 = {}
+attr_index = 0
 
 # load data
 mat = scipy.io.loadmat('../dataset/kaggle/1968.mat')
@@ -308,9 +308,10 @@ d = np.squeeze(np.asarray(A.sum(axis=1)))
 [rows, columns, value] = find(A)
 P = csr_matrix((value/(1e-64 + d[rows]), (rows, columns)), shape=(n, n))
 
-
+embedding4 = X.toarray()
 
 for i_group in range(group_num):
+    print "calculating group ", i_group
     label = group[:,i_group]
     option['overlap'] = 0
     option['sparsity']=20
@@ -319,21 +320,24 @@ for i_group in range(group_num):
     option['sparsity']=100
     embedding2, _=attributeEmbedding(PG, X, label, option)
     embedding3=deepwalk_infty_Embedding(PG,option)
-    embedding = np.concatenate([embedding1, embedding2, embedding3], axis=1)
+    embedding = np.concatenate([embedding1, embedding2, embedding3, embedding4], axis=1)
 
     # crossvalidation
     shuffles1 = []
     shuffles2 = []
     shuffles3 = []
+    shuffles4 = []
     number_shuffles = k
     for x in range(number_shuffles):
         shuf_tmp = skshuffle(embedding, label)
         emb1 = shuf_tmp[0][:,:option['dimension']]
         emb2 = shuf_tmp[0][:,option['dimension']:2*option['dimension']]
-        emb3 = shuf_tmp[0][:,2*option['dimension']:]
+        emb3 = shuf_tmp[0][:,2*option['dimension']:-embedding4.shape[1]]
+        emb4 = shuf_tmp[0][:,-embedding4.shape[1]:]
         shuffles1.append([emb1, shuf_tmp[1]])
         shuffles2.append([emb2, shuf_tmp[1]])
         shuffles3.append([emb3, shuf_tmp[1]])
+        shuffles4.append([emb4, shuf_tmp[1]])
 
     preds_tmp_1 = defaultdict(list)
     label_tmp_1 = defaultdict(list)
@@ -355,7 +359,6 @@ for i_group in range(group_num):
     preds_2[i_group] = preds_tmp_2
     y_label_2[i_group] = label_tmp_2
 
-
     preds_tmp_3 = defaultdict(list)
     label_tmp_3 = defaultdict(list)
     for train_percent in training_percents:
@@ -366,24 +369,31 @@ for i_group in range(group_num):
     preds_3[i_group] = preds_tmp_3
     y_label_3[i_group] = label_tmp_3
 
-
-# directly use attributes
+    # directly use attributes
     preds_tmp_4 = defaultdict(list)
     label_tmp_4 = defaultdict(list)
     for train_percent in training_percents:
         for shuf in shuffles4:
-            X_select, index = cover_fit(group[Train, i_group], X[Train,:], 1)
-            preds_tmp_4[train_percent].append(X_select[Test,index])
+            X_train, y_train, X_test, y_test = preprocessing(shuf, train_percent)
+            y_train_t = np.reshape(y_train, (y_train.shape[0],1))
+            X_select, index = cover_fit(csc_matrix(y_train_t), csc_matrix(X_train), 1)
+            preds_tmp_4[train_percent].append(X_test[:,index[1][0]])
     preds_4[i_group] = preds_tmp_4
     y_label_4[i_group] = label_tmp_4
 
-
-
 averages = ["micro", "macro", "samples", "weighted"]
-results1 = {}
-results2 = {}
-results3 = {}
+results1_avg = []
+results2_avg = []
+results3_avg = []
+results4_avg = []
+results_avg = []
+results1_var = []
+results2_var = []
+results3_var = []
+results4_var = []
+results_var = []
 for train_percent in training_percents:
+
     p1 = [preds_1[m][train_percent] for m in range(group.shape[1])]
     p1 = np.transpose(np.array(p1), [1, 0, 2])
     l1 = [y_label_1[m][train_percent] for m in range(group.shape[1])]
@@ -399,46 +409,68 @@ for train_percent in training_percents:
     l3 = [y_label_3[m][train_percent] for m in range(group.shape[1])]
     l3 = np.transpose(np.array(l3), [1, 0, 2])
 
+    p4 = [preds_4[m][train_percent] for m in range(group.shape[1])]
+    p4 = np.transpose(np.array(p4), [1, 0, 2])
+    l4 = [y_label_3[m][train_percent] for m in range(group.shape[1])]
+    l4 = np.transpose(np.array(l4), [1, 0, 2])
+
     score_tmp1=[]
     score_tmp2=[]
     score_tmp3=[]
-    score_tmp_attr=[]
+    score_tmp4=[]
+
     for j in range(number_shuffles):
         score_tmp1.append(score(p1[j,:,:], l1[j,:,:]))
         score_tmp2.append(score(p2[j,:,:], l2[j,:,:]))
         score_tmp3.append(score(p3[j,:,:], l3[j,:,:]))
-        
-    for j in range(number_shuffles):
-        score_buf = {}
-        for average in averages:
-            score_buf[average] = max(score_tmp1[j][average], score_tmp2[j][average])
-        score_tmp_attr.append(score_buf) 
-
-
+        score_tmp4.append(score(p4[j,:,:], l4[j,:,:]))
+	
     average_score1 = {}
     average_score2 = {}
-    average_score3 = {}  
+    average_score3 = {}
+    average_score4 = {}
+    var_score1 = {}
+    var_score2 = {}
+    var_score3 = {}
+    var_score4 = {}
     for average in averages:
         average_score1[average] = np.average([score_tmp1[m][average] for m in range(number_shuffles)])
         average_score2[average] = np.average([score_tmp2[m][average] for m in range(number_shuffles)])
         average_score3[average] = np.average([score_tmp3[m][average] for m in range(number_shuffles)])
+        average_score4[average] = np.average([score_tmp4[m][average] for m in range(number_shuffles)])
+        var_score1[average] = np.var([score_tmp1[m][average] for m in range(number_shuffles)])
+        var_score2[average] = np.var([score_tmp2[m][average] for m in range(number_shuffles)])
+        var_score3[average] = np.var([score_tmp3[m][average] for m in range(number_shuffles)])
+        var_score4[average] = np.var([score_tmp4[m][average] for m in range(number_shuffles)])
 
-    results1[train_percent] = average_score1
-    results2[train_percent] = average_score2
-    results3[train_percent] = average_score3
+    results1_avg.append(average_score1)
+    results2_avg.append(average_score2)
+    results3_avg.append(average_score3)
+    results4_avg.append(average_score4)
+    results1_var.append(var_score1)
+    results2_var.append(var_score2)
+    results3_var.append(var_score3)
+    results4_var.append(var_score4)
 
+    #results1_avg[train_percent] = average_score1
+    #results2_avg[train_percent] = average_score2
+    #results3_avg[train_percent] = average_score3
+    #results4_avg[train_percent] = average_score4
+    #results1_var[train_percent] = var_score1
+    #results2_var[train_percent] = var_score2
+    #results3_var[train_percent] = var_score3
+    #results4_var[train_percent] = var_score4
 
+results_avg.append(results1_avg)
+results_avg.append(results2_avg)
+results_avg.append(results3_avg)
+results_avg.append(results4_avg)
+results_var.append(results1_var)
+results_var.append(results2_var)
+results_var.append(results3_var)
+results_var.append(results4_var)
 
-    average_score1 = {}
-    average_score2 = {}
-    for average in averages:
-        average_score1[average] = np.average([score_tmp_attr[m][average] for m in range(number_shuffles)])
-        average_score2[average] = np.average([score_tmp3[m][average] for m in range(number_shuffles)])
-    
-    results1[train_percent] = average_score1
-    results2[train_percent] = average_score2
-
-
+scipy.io.savemat('attr_results.mat', mdict={'average': results_avg, 'variance': results_var})
 
 
 
