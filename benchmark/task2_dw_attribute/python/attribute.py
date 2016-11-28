@@ -138,6 +138,21 @@ def jaccard_sim(x,y):
     obj_val = np.multiply(x,y).sum() / ( x.sum() + y.sum() - np.multiply(x,y).sum() )
     return obj_val
 
+def max_fit(group, X ):
+    n,M = group.shape
+    n,T = X.shape
+
+    coding = np.zeros([T])
+    y = group.toarray()
+
+    for i_attribute in range(T):
+        coding[i_attribute] = jaccard_sim(y, X[:,i_attribute].toarray())
+    
+    index = np.where( coding == np.max(coding))
+
+    return index[0][0]
+
+
 def cover_fit(group, X, K):
     n,M = group.shape
     n,T = X.shape
@@ -302,7 +317,7 @@ attr_index = 0
 mat = scipy.io.loadmat('../dataset/kaggle/1968.mat')
 A = mat.get('network')
 group = mat.get('location')
-X = mat.get('education')
+X = mat.get('location_id')
 ind = find(X>1)
 X[ind[0],ind[1]] = 1
 n, group_num = group.shape
@@ -380,7 +395,7 @@ for i_group in range(group_num):
         for shuf in shuffles4:
             X_train, y_train, X_test, y_test = preprocessing(shuf, train_percent)
             y_train_t = np.reshape(y_train, (y_train.shape[0],1))
-            X_select, index = cover_fit(csc_matrix(y_train_t), csc_matrix(X_train), 1)
+            index = max_fit(csc_matrix(y_train_t), csc_matrix(X_train) )
             preds_tmp_4[train_percent].append(X_test[:,index])
     preds_4[i_group] = preds_tmp_4
     y_label_4[i_group] = label_tmp_4
