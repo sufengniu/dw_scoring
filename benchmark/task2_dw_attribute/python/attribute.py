@@ -154,7 +154,7 @@ def max_fit(group, X ):
     
     index = np.where( coding == np.max(coding))
 
-    return index[0][0]
+    return index[0][0]    
 
 def cover_fit(group, X, K):
     n,M = group.shape
@@ -318,12 +318,12 @@ attr_index = 0
 
 # load data
 list_of_files = glob.glob('../dataset/kaggle/*.mat')
+#mat = scipy.io.loadmat('../dataset/1968.mat')
 for f in list_of_files:
     mat = scipy.io.loadmat(f)
-# mat = scipy.io.loadmat('../dataset/kaggle/8777.mat') # 11186  1968
     A = mat.get('network')
     group = mat.get('location')
-    X = mat.get('education')  # education   location_id
+    X = mat.get('location_id')
     ind = find(X>1)
     X[ind[0],ind[1]] = 1
     n, group_num = group.shape
@@ -338,12 +338,6 @@ for f in list_of_files:
     for i_group in range(group_num):
         print "calculating group ", i_group
         label = group[:,i_group]
-        option['overlap'] = 0
-        option['sparsity']=20
-        embedding2, _= attributeEmbedding(PG, X, label, option)
-        option['overlap'] = 1
-        option['sparsity']=100
-        embedding3, _=attributeEmbedding(PG, X, label, option)
 
         # crossvalidation
         shuffles1 = []
@@ -352,17 +346,20 @@ for f in list_of_files:
         shuffles4 = []
         number_shuffles = k
         for x in range(number_shuffles):
-            shuf_tmp = skshuffle(embedding1, embedding2, embedding3, embedding4, label)
+            shuf_tmp = skshuffle(embedding1, embedding4, label)
             emb1 = shuf_tmp[0]
-            emb2 = shuf_tmp[1]
-            emb3 = shuf_tmp[2]
-            emb4 = shuf_tmp[3]
+            emb4 = shuf_tmp[1]
+            option['overlap'] = 0
+            option['sparsity']=20
+            embedding2, _ = attributeEmbedding(PG, X, shuf_tmp[2], option)
+            option['overlap'] = 1
+            option['sparsity']=100
+            embedding3, _= attributeEmbedding(PG, X, shuf_tmp[2], option)
 
-
-            shuffles1.append([emb1, shuf_tmp[4]])
-            shuffles2.append([emb2, shuf_tmp[4]])
-            shuffles3.append([emb3, shuf_tmp[4]])
-            shuffles4.append([emb4, shuf_tmp[4]])
+            shuffles1.append([emb1, shuf_tmp[2]])
+            shuffles2.append([embedding2, shuf_tmp[2]])
+            shuffles3.append([embedding3, shuf_tmp[2]])
+            shuffles4.append([emb4, shuf_tmp[2]])
 
         preds_tmp_1 = defaultdict(list)
         label_tmp_1 = defaultdict(list)
@@ -403,6 +400,7 @@ for f in list_of_files:
                 y_train_t = np.reshape(y_train, (y_train.shape[0],1))
                 index = max_fit(csc_matrix(y_train_t), csc_matrix(X_train))
                 preds_tmp_4[train_percent].append(X_test[:,index])
+                label_tmp_4[train_percent].append(y_test)
         preds_4[i_group] = preds_tmp_4
         y_label_4[i_group] = label_tmp_4
 
@@ -481,7 +479,6 @@ for f in list_of_files:
     results_var = np.array([results1_var, results2_var, results3_var, results4_var])
     fname = os.path.basename(os.path.splitext(f)[0])
     filename = 'attr_%s_result.mat' % fname
-    # filename = 'attr_result.mat'
     scipy.io.savemat(filename, mdict={'average': results_avg, 'variance': results_var})
 
 
