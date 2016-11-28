@@ -306,24 +306,25 @@ option['step'] = 7
 
 k=10
 training_percents = [0.1, 0.3, 0.5, 0.9]
-preds_1 = {}
-preds_2 = {}
-preds_3 = {}
-preds_4 = {}
-y_label_1 = {}
-y_label_2 = {}
-y_label_3 = {}
-y_label_4 = {}
 attr_index = 0
 
 # load data
 list_of_files = glob.glob('../dataset/kaggle/*.mat')
 for f in list_of_files:
+    preds_1 = {}
+    preds_2 = {}
+    preds_3 = {}
+    preds_4 = {}
+    y_label_1 = {}
+    y_label_2 = {}
+    y_label_3 = {}
+    y_label_4 = {}
+
     mat = scipy.io.loadmat(f)
 # mat = scipy.io.loadmat('../dataset/kaggle/8777.mat') # 11186  1968
     A = mat.get('network')
     group = mat.get('location')
-    X = mat.get('education')  # education   location_id
+    X = mat.get('location_id')  # education   location_id
     ind = find(X>1)
     X[ind[0],ind[1]] = 1
     n, group_num = group.shape
@@ -451,6 +452,35 @@ for f in list_of_files:
             score_tmp3.append(score(p3[j,:,:], l3[j,:,:]))
             score_tmp4.append(score(p4[j,:,:], l4[j,:,:]))
 
+
+        # average_score1 = {}
+        # average_score2 = {}
+        # average_score3 = {}
+        # average_score4 = {}
+        # var_score1 = {}
+        # var_score2 = {}
+        # var_score3 = {}
+        # var_score4 = {}
+        # for average in averages:
+        #     average_score1[average] = np.average([score_tmp1[m][average] for m in range(number_shuffles)])
+        #     average_score2[average] = np.average([score_tmp2[m][average] for m in range(number_shuffles)])
+        #     average_score3[average] = np.average([score_tmp3[m][average] for m in range(number_shuffles)])
+        #     average_score4[average] = np.average([score_tmp4[m][average] for m in range(number_shuffles)])
+        #     var_score1[average] = np.var([score_tmp1[m][average] for m in range(number_shuffles)])
+        #     var_score2[average] = np.var([score_tmp2[m][average] for m in range(number_shuffles)])
+        #     var_score3[average] = np.var([score_tmp3[m][average] for m in range(number_shuffles)])
+        #     var_score4[average] = np.var([score_tmp4[m][average] for m in range(number_shuffles)])
+
+        # results1_avg[train_percent] = average_score1
+        # results2_avg[train_percent] = average_score2
+        # results3_avg[train_percent] = average_score3
+        # results4_avg[train_percent] = average_score4
+        # results1_var[train_percent] = var_score1
+        # results2_var[train_percent] = var_score2
+        # results3_var[train_percent] = var_score3
+        # results4_var[train_percent] = var_score4
+
+
         average_score1 = []
         average_score2 = []
         average_score3 = []
@@ -486,41 +516,6 @@ for f in list_of_files:
     scipy.io.savemat(filename, mdict={'average': results_avg, 'variance': results_var})
 
 
-    # average_score1 = {}
-    # average_score2 = {}
-    # average_score3 = {}
-    # average_score4 = {}
-    # var_score1 = {}
-    # var_score2 = {}
-    # var_score3 = {}
-    # var_score4 = {}
-    # for average in averages:
-        # average_score1[average] = np.average([score_tmp1[m][average] for m in range(number_shuffles)])
-        # average_score2[average] = np.average([score_tmp2[m][average] for m in range(number_shuffles)])
-        # average_score3[average] = np.average([score_tmp3[m][average] for m in range(number_shuffles)])
-        # average_score4[average] = np.average([score_tmp4[m][average] for m in range(number_shuffles)])
-        # var_score1[average] = np.var([score_tmp1[m][average] for m in range(number_shuffles)])
-        # var_score2[average] = np.var([score_tmp2[m][average] for m in range(number_shuffles)])
-        # var_score3[average] = np.var([score_tmp3[m][average] for m in range(number_shuffles)])
-        # var_score4[average] = np.var([score_tmp4[m][average] for m in range(number_shuffles)])
-
-    # results1_avg.append(average_score1)
-    # results2_avg.append(average_score2)
-    # results3_avg.append(average_score3)
-    # results4_avg.append(average_score4)
-    # results1_var.append(var_score1)
-    # results2_var.append(var_score2)
-    # results3_var.append(var_score3)
-    # results4_var.append(var_score4)
-
-    #results1_avg[train_percent] = average_score1
-    #results2_avg[train_percent] = average_score2
-    #results3_avg[train_percent] = average_score3
-    #results4_avg[train_percent] = average_score4
-    #results1_var[train_percent] = var_score1
-    #results2_var[train_percent] = var_score2
-    #results3_var[train_percent] = var_score3
-    #results4_var[train_percent] = var_score4
 
 # results_avg.append(results1_avg)
 # results_avg.append(results2_avg)
