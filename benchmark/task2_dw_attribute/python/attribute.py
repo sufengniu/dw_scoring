@@ -436,7 +436,7 @@ for f in list_of_files:
 
         p4 = [preds_4[m][train_percent] for m in range(group.shape[1])]
         p4 = np.transpose(np.array(p4), [1, 0, 2])
-        l4 = [y_label_3[m][train_percent] for m in range(group.shape[1])]
+        l4 = [y_label_4[m][train_percent] for m in range(group.shape[1])]
         l4 = np.transpose(np.array(l4), [1, 0, 2])
 
         score_tmp1=[]
