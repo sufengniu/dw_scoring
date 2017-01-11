@@ -30,7 +30,7 @@ from utils import TopKRanker, sparse2graph, label2onehot
 
 s0 = False
 top_k = False
-emb_file = "../data/blogcatalog.emb"
+emb_file = "../data/blogcatalog_20.emb"
 mat_file = "../data/blogcatalog.mat"
 out_file = "../result/blogcatalog"
 emb = None
@@ -106,7 +106,7 @@ def score(emb, startfrom0=False, topk=False, k=2, classifier=classifier):
 
     shuffles = []
     number_shuffles = k
-    print k, "-----------------"
+
     for x in range(number_shuffles):
       shuffles.append(skshuffle(features_matrix, labels_matrix))
 
